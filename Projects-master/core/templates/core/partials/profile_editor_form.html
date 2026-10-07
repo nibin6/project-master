@@ -1,0 +1,71 @@
+{% load profile_tags %}
+<div id="profile-photo-preview-wrap" class="d-flex align-items-center gap-3 mb-3">
+    {% if profile.profile_picture %}
+    <img id="profile-photo-preview" src="{{ profile.profile_picture }}" data-original-src="{{ profile.profile_picture }}" alt="Profile photo preview" class="rounded-circle" width="80" height="80" style="object-fit:cover">
+    {% else %}
+    {% profile_avatar user profile 80 %}
+    <img id="profile-photo-preview" alt="Selected profile photo preview" class="rounded-circle d-none" width="80" height="80" style="object-fit:cover">
+    {% endif %}
+</div>
+<form method="post" enctype="multipart/form-data" class="profile-editor-form">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label class="form-label" for="id_profile_photo">Upload Profile Photo</label>
+        {{ form.profile_photo }}
+        <small class="form-text text-muted">JPG, PNG, or WebP, up to 5 MB.</small>
+        {{ form.profile_photo.errors }}
+        <div id="profile-photo-error" class="text-danger small" role="alert"></div>
+    </div>
+    {% for field in form %}
+        {% if field.name != 'profile_photo' %}
+        <div class="mb-3">
+            {{ field.label_tag }}
+            {{ field }}
+            {{ field.errors }}
+        </div>
+        {% endif %}
+    {% endfor %}
+    <button type="submit" class="btn btn-primary">{{ submit_label|default:"Save Changes" }}</button>
+</form>
+<script>
+document.querySelectorAll('[data-photo-preview]').forEach((input) => {
+    input.addEventListener('change', () => {
+        const file = input.files[0];
+        const preview = document.getElementById(input.dataset.photoPreview);
+        const error = document.getElementById(input.dataset.photoError);
+        const fallback = document.getElementById('profile-photo-preview-wrap').querySelector('.profile-avatar-fallback');
+        const resetPreview = () => {
+            if (preview.dataset.objectUrl) URL.revokeObjectURL(preview.dataset.objectUrl);
+            if (preview.dataset.originalSrc) {
+                preview.src = preview.dataset.originalSrc;
+                preview.classList.remove('d-none');
+            } else {
+                preview.removeAttribute('src');
+                preview.classList.add('d-none');
+                if (fallback) fallback.classList.remove('d-none');
+            }
+        };
+        error.textContent = '';
+        if (!file) return;
+        const allowedType = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type);
+        const allowedExtension = /\.(jpe?g|png|webp)$/i.test(file.name);
+        if (!allowedType && !allowedExtension) {
+            error.textContent = 'Please select a valid image file.';
+            input.value = '';
+            resetPreview();
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            error.textContent = 'Image size is too large. Choose an image under 5 MB.';
+            input.value = '';
+            resetPreview();
+            return;
+        }
+        if (preview.dataset.objectUrl) URL.revokeObjectURL(preview.dataset.objectUrl);
+        preview.dataset.objectUrl = URL.createObjectURL(file);
+        preview.src = preview.dataset.objectUrl;
+        preview.classList.remove('d-none');
+        if (fallback) fallback.classList.add('d-none');
+    });
+});
+</script>

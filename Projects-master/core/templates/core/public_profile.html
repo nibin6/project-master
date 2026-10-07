@@ -1,0 +1,96 @@
+{% extends "core/base.html" %}
+{% load profile_tags %}
+
+{% block title %}{{ person.first_name|default:person.username }} · Profile{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <section class="card profile-hero shadow-sm mb-4" aria-labelledby="profile-name">
+            <div class="card-body p-4 p-md-5">
+                <div class="d-flex flex-column flex-sm-row align-items-center align-items-sm-start gap-4">
+                    {% profile_avatar person profile 112 %}
+                    <div class="flex-grow-1 text-center text-sm-start">
+                        <h1 class="h2 mb-1" id="profile-name">{{ person.first_name|default:person.username }}</h1>
+                        <p class="text-muted mb-2">@{{ person.username }}</p>
+                        {% if is_current_user %}<p class="small text-muted mb-2">{{ person.email }}</p>{% endif %}
+                        <p class="mb-2" aria-label="{% if rating_count %}{{ rating_average }} out of 5, based on {{ rating_count }} reviews{% else %}No reviews yet{% endif %}">
+                            {% if rating_count %}⭐ {{ rating_average }} / 5 · {{ rating_count }} review{{ rating_count|pluralize }}{% else %}No reviews yet{% endif %}
+                        </p>
+                        {% if is_current_user %}
+                            {% if form %}
+                            <button class="btn btn-primary btn-sm mt-2" type="button" data-bs-toggle="collapse" data-bs-target="#profile-editor" aria-expanded="{{ editor_open|yesno:'true,false' }}" aria-controls="profile-editor">Edit Profile</button>
+                            {% else %}
+                            <a class="btn btn-primary btn-sm mt-2" href="{% url 'my_profile' %}#profile-editor">Edit Profile</a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+                {% if profile.bio %}<p class="mt-4 mb-0">{{ profile.bio }}</p>{% endif %}
+            </div>
+        </section>
+
+        {% if is_current_user and form %}
+        <section class="collapse {% if editor_open %}show{% endif %} mb-4" id="profile-editor">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="h4 mb-3">Edit your profile</h2>
+                    {% include "core/partials/profile_editor_form.html" with submit_label="Save Changes" %}
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <section class="card shadow-sm mb-4">
+            <div class="card-body p-4">
+                <h2 class="h4">About</h2>
+                <dl class="row mb-0">
+                    <dt class="col-sm-3">Location</dt><dd class="col-sm-9">{{ profile.location|default:"Not provided" }}</dd>
+                    <dt class="col-sm-3">Availability</dt><dd class="col-sm-9">{{ profile.availability|default:"Not provided" }}</dd>
+                    {% if profile.experience_level %}<dt class="col-sm-3">Experience</dt><dd class="col-sm-9">{{ profile.get_experience_level_display }}</dd>{% endif %}
+                </dl>
+            </div>
+        </section>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-6">
+                <section class="card shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <h2 class="h5">Skills I can teach</h2>
+                        <p class="mb-0">{{ profile.skills_offered|default:"Not provided" }}</p>
+                    </div>
+                </section>
+            </div>
+            <div class="col-md-6">
+                <section class="card shadow-sm h-100">
+                    <div class="card-body p-4">
+                        <h2 class="h5">Skills I want to learn</h2>
+                        <p class="mb-0">{{ profile.skills_needed|default:"Not provided" }}</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <h2 class="h4">Active Listings</h2>
+        <div class="row">
+            {% for listing in listings %}
+            <div class="col-md-4 mb-3">
+                <div class="card skill-card h-100">
+                    <div class="card-body">
+                        <h3 class="h6">{{ listing.title }}</h3>
+                        <p class="small">{% if listing.review_count %}⭐ {{ listing.rating_average|floatformat:1 }} / 5 · {{ listing.review_count }} review{{ listing.review_count|pluralize }}{% else %}No reviews yet{% endif %}</p>
+                        <p class="small text-muted">{{ listing.description|truncatewords:15 }}</p>
+                        <a href="{% url 'listing_detail' listing.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}<p class="empty-state col-12">No active listings.</p>{% endfor %}
+        </div>
+
+        <h2 class="h4 mt-4">Reviews</h2>
+        {% for r in ratings %}
+        <div class="review-card"><span class="rating-mark" aria-label="{{ r.stars }} out of 5 stars">{{ r.stars }}⭐</span> — {{ r.review }} <span class="text-muted small">({{ r.from_user.username }} · {{ r.created_at|date:"M j, Y" }})</span></div>
+        {% empty %}<p class="empty-state">No reviews yet.</p>{% endfor %}
+    </div>
+</div>
+{% endblock %}

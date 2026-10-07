@@ -1,0 +1,35 @@
+{% load static %}
+<div class="floating-chat-root" data-conversations-url="{% url 'message_conversations' %}" data-message-url-pattern="{% url 'exchange_messages' 123456789 %}">
+    <form id="floating-chat-csrf" class="d-none">{% csrf_token %}</form>
+    <button type="button" class="floating-chat-launch" id="chat-launch" aria-label="Open messages" aria-controls="floating-chat-window" aria-expanded="false">
+        <span aria-hidden="true">💬</span>
+        <span class="floating-chat-badge d-none" id="chat-unread-badge" aria-live="polite"></span>
+    </button>
+
+    <section class="floating-chat-window" id="floating-chat-window" aria-label="Messages" hidden>
+        <header class="floating-chat-header">
+            <strong>Messages</strong>
+            <div class="d-flex gap-1">
+                <button type="button" class="floating-chat-control" id="chat-minimize" aria-label="Minimize messages">−</button>
+                <button type="button" class="floating-chat-control" id="chat-close" aria-label="Close messages">×</button>
+            </div>
+        </header>
+        <div class="floating-chat-main" id="chat-main">
+            <aside class="floating-chat-conversations" aria-label="Your active exchanges" id="chat-conversation-list"></aside>
+            <section class="floating-chat-conversation" aria-label="Conversation">
+                <div class="floating-chat-thread-header">
+                    <strong id="chat-conversation-title">Choose an exchange</strong>
+                    <div class="small text-muted" id="chat-conversation-context"></div>
+                </div>
+                <div class="floating-chat-messages" id="chat-message-list" aria-live="polite"></div>
+                <form class="floating-chat-composer" id="chat-composer" hidden>
+                    <label class="visually-hidden" for="chat-message-input">Type a message</label>
+                    <textarea id="chat-message-input" rows="1" maxlength="2000" placeholder="Type a message..." required></textarea>
+                    <button type="submit" class="btn btn-primary btn-sm">Send</button>
+                </form>
+                <div class="floating-chat-status" id="chat-status" role="status" aria-live="polite"></div>
+            </section>
+        </div>
+    </section>
+</div>
+<script src="{% static 'core/js/floating_chat.js' %}" defer></script>

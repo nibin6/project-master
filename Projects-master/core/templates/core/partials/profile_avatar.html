@@ -1,0 +1,10 @@
+{% if avatar_url %}
+<img src="{{ avatar_url }}" alt="{{ avatar_label }}" class="profile-avatar" width="{{ avatar_size }}" height="{{ avatar_size }}" style="width:{{ avatar_size }}px;height:{{ avatar_size }}px;object-fit:cover">
+{% else %}
+<span class="profile-avatar profile-avatar-fallback" role="img" aria-label="Default profile avatar" style="width:{{ avatar_size }}px;height:{{ avatar_size }}px">
+    <svg viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+        <circle cx="32" cy="22" r="12" fill="currentColor" opacity=".82"/>
+        <path d="M10 58c1-13 9-20 22-20s21 7 22 20" fill="currentColor" opacity=".82"/>
+    </svg>
+</span>
+{% endif %}
